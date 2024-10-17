@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/ecgcheck/dashboard</path>
+    <page_callback>CRM_Ecgcheck_Page_Dashboard</page_callback>
+    <title>ECG Dashboard</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ecgcheck/settings</path>
+    <page_callback>CRM_Ecgcheck_Form_Settings</page_callback>
+    <title>ECG Settings</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>
