@@ -18,6 +18,10 @@ class EmailEcgCheckCustomFields {
   const CUSTOM_FIELD_STATUS = 'status';
   const TABLE_NAME = 'civicrm_ecg_check';
 
+  public static function getAvailableStatuses() {
+    return ['pending', 'listed', 'not_listed', 'error'];
+  }
+
   private ?int $emailId = null;
 
   /**
@@ -61,11 +65,12 @@ class EmailEcgCheckCustomFields {
 
   public function getAllData(): array {
     $email = Email::get(TRUE)
-      ->addSelect('ecg_check.error_message',
-        'ecg_check.status:name',
-        'ecg_check.status:description',
-        'ecg_check.status',
-        'ecg_check.last_check',
+      ->addSelect(
+        EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message',
+        EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:name',
+        EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:description',
+        EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status',
+        EmailEcgCheckCustomFields::CUSTOM_GROUP . '.last_check',
         'id'
       )
       ->addWhere('id', '=', $this->emailId)
@@ -75,9 +80,9 @@ class EmailEcgCheckCustomFields {
 
     return [
       'id' => $email['id'],
-      'status_name' => $email['ecg_check.status:name'],
-      'last_check' => $email['ecg_check.last_check'],
-      'error_message' => $email['ecg_check.error_message'],
+      'status_name' => $email[EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:name'],
+      'last_check' => $email[EmailEcgCheckCustomFields::CUSTOM_GROUP . '.last_check'],
+      'error_message' => $email[EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message'],
     ];
   }
 
@@ -88,7 +93,7 @@ class EmailEcgCheckCustomFields {
     $this->validateEmail();
 
     Email::update(TRUE)
-      ->addValue('ecg_check.last_check', (new DateTime())->format('Y-m-d H:i:s'))
+      ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.last_check', (new DateTime())->format('Y-m-d H:i:s'))
       ->addWhere('id', '=', $this->emailId)
       ->execute();
   }
@@ -100,7 +105,7 @@ class EmailEcgCheckCustomFields {
     $this->validateEmail();
 
     Email::update(TRUE)
-      ->addValue('ecg_check.error_message', '')
+      ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message', '')
       ->addWhere('id', '=', $this->emailId)
       ->execute();
   }
@@ -112,7 +117,7 @@ class EmailEcgCheckCustomFields {
     $this->validateEmail();
 
     Email::update(TRUE)
-      ->addValue('ecg_check.error_message', $errorMessage)
+      ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message', $errorMessage)
       ->addWhere('id', '=', $this->emailId)
       ->execute();
   }
@@ -152,7 +157,7 @@ class EmailEcgCheckCustomFields {
    */
   private function setStatus($statusName) {
     Email::update(TRUE)
-      ->addValue('ecg_check.status:name', $statusName)
+      ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:name', $statusName)
       ->addWhere('id', '=', $this->emailId)
       ->execute();
   }
@@ -167,49 +172,37 @@ class EmailEcgCheckCustomFields {
   }
 
   public static function getStatistic(): array {
-    $allEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->execute()
-      ->first()['count'];
-    $pendingEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->addWhere('ecg_check.status:name', '=', 'pending')
-      ->execute()
-      ->first()['count'];
-    $listedEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->addWhere('ecg_check.status:name', '=', 'listed')
-      ->execute()
-      ->first()['count'];
-    $notListedEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->addWhere('ecg_check.status:name', '=', 'not_listed')
-      ->execute()
-      ->first()['count'];
-    $errorEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->addWhere('ecg_check.status:name', '=', 'error')
-      ->execute()
-      ->first()['count'];
-    $withoutStatusEmailsCount = Email::get(TRUE)
-      ->addSelect('COUNT(id) AS count')
-      ->addWhere('ecg_check.status:name', 'IS NULL')
-      ->execute()
-      ->first()['count'];
+    $emails = Email::get(TRUE)
+      ->addSelect('COUNT(id) AS count', 'ecg_check.status:name AS status')
+      ->addGroupBy('ecg_check.status')
+      ->execute();
 
-    return [
-      'withoutStatusEmails' => $withoutStatusEmailsCount,
-      'pendingEmails' => $pendingEmailsCount,
-      'listedEmails' => $listedEmailsCount,
-      'notListedEmails' => $notListedEmailsCount,
-      'errorEmails' => $errorEmailsCount,
-      'withoutStatusEmailsPercent' => round($withoutStatusEmailsCount * 100 / $allEmailsCount, 3),
-      'pendingEmailsPercent' => round($pendingEmailsCount * 100 / $allEmailsCount, 3),
-      'listedEmailsPercent' => round($listedEmailsCount * 100 / $allEmailsCount, 3),
-      'notListedEmailsPercent' => round($notListedEmailsCount * 100 / $allEmailsCount, 3),
-      'errorEmailsPercent' => round($errorEmailsCount * 100 / $allEmailsCount, 3),
-      'allEmails' => $allEmailsCount,
-    ];
+    $allEmailsCount = 0;
+    $statisticData = [];
+    $existenceStatuses = [];
+
+    foreach ($emails as $email) {
+      $allEmailsCount += $email['count'];
+      $statusName = ($email['status'] === null) ? 'is_null' : $email['status'];
+      $statisticData[] = ['status' => $statusName, 'count' => $email['count']];
+      $existenceStatuses[] = $statusName;
+    }
+
+    foreach (EmailEcgCheckCustomFields::getAvailableStatuses() as $statusName) {
+      if (!in_array($statusName, $existenceStatuses)) {
+        $statisticData[] = [
+          'status' => $statusName,
+          'count' => 0,
+        ];
+      }
+    }
+
+    foreach ($statisticData as $key => $statisticItem) {
+      $statisticData[$key]['percent'] = round($statisticItem['count'] * 100 / $allEmailsCount, 3);
+      $statisticData[$key]['allEmailsCount'] = $allEmailsCount;
+    }
+
+    return $statisticData;
   }
 
 }

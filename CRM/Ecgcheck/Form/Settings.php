@@ -6,7 +6,8 @@ use CRM_Ecgcheck_ExtensionUtil as E;
 class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
 
   public function buildQuickForm() {
-    $this->add('number', 'default_api_batch_size', 'Api batch size', ['min' => 1], true);
+    $this->add('number', 'api_batch_size', 'Api batch size', ['min' => 1], true);
+    $this->add('number', 'check_live_time', 'check status again after time(hours)', [], true);
     $this->add('text', 'api_key', 'Api key', [], true);
 
     $this->addButtons([
@@ -23,12 +24,16 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
 
-    if (!empty($values['default_api_batch_size']) && !empty((int) $values['default_api_batch_size'])) {
-      EcgcheckSettings::setDefaultApiBatchSize((int) $values['default_api_batch_size']);
+    if (!empty($values['api_batch_size']) && !empty((int) $values['api_batch_size'])) {
+      EcgcheckSettings::setApiBatchSize((int) $values['api_batch_size']);
     }
 
     if (!empty($values['api_key'])) {
       EcgcheckSettings::setApiKey($values['api_key']);
+    }
+
+    if (!empty($values['check_live_time'])) {
+      EcgcheckSettings::setCheckLiveTime((int) $values['check_live_time']);
     }
 
     CRM_Core_Session::setStatus('', ts('Settings are updated!'), 'success');
@@ -38,8 +43,9 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
 
   public function setDefaultValues(): array {
     return [
-      'default_api_batch_size' => EcgcheckSettings::getDefaultApiBatchSize(),
+      'api_batch_size' => EcgcheckSettings::getApiBatchSize(),
       'api_key' => EcgcheckSettings::getApiKey(),
+      'check_live_time' => EcgcheckSettings::getCheckLiveTime(),
     ];
   }
 

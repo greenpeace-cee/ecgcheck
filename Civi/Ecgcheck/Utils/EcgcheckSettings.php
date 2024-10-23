@@ -2,17 +2,33 @@
 
 namespace Civi\Ecgcheck\Utils;
 
+use Civi\API\Exception\UnauthorizedException;
+use Civi\Api4\Job;
+use Civi\Api4\OptionValue;
 use Civi\Api4\Setting;
 use CRM_Core_Exception;
 
 class EcgcheckSettings {
 
   private static function getAvailableSettings(): array {
-    return ['ecgcheck_api_key', 'ecgcheck_default_api_batch_size'];
+    return ['ecgcheck_api_key', 'ecgcheck_api_batch_size', 'ecgcheck_check_live_time'];
   }
 
   public static function getApiKey(): string {
     return EcgcheckSettings::getSettingValue('ecgcheck_api_key');
+  }
+
+  public static function getMainScheduledJobId(): int {
+    $job = Job::get(TRUE)
+      ->addWhere('name', '=', 'run_ecg_check_api_job')
+      ->execute()
+      ->first();
+
+    return $job['id'];
+  }
+
+  public static function getApiTimeOut(): string {
+    return 60 * 10;// sec
   }
 
   public static function setApiKey($apiKey) {
@@ -21,14 +37,22 @@ class EcgcheckSettings {
     }
   }
 
-  public static function getDefaultApiBatchSize(): int {
-    return EcgcheckSettings::getSettingValue('ecgcheck_default_api_batch_size');
+  public static function getApiBatchSize(): int {
+    return EcgcheckSettings::getSettingValue('ecgcheck_api_batch_size');
   }
 
-  public static function setDefaultApiBatchSize($apiBatchSize) {
+  public static function setApiBatchSize($apiBatchSize) {
     if (!empty($apiBatchSize)) {
-      EcgcheckSettings::setSettingValue('ecgcheck_default_api_batch_size', $apiBatchSize);
+      EcgcheckSettings::setSettingValue('ecgcheck_api_batch_size', $apiBatchSize);
     }
+  }
+
+  public static function getCheckLiveTime(): int {
+    return (int) EcgcheckSettings::getSettingValue('ecgcheck_check_live_time');
+  }
+
+  public static function setCheckLiveTime($hours) {
+    EcgcheckSettings::setSettingValue('ecgcheck_check_live_time', $hours);
   }
 
   /**
@@ -71,6 +95,26 @@ class EcgcheckSettings {
         ->addValue($settingName, $settingValue)
         ->execute();
     } catch (CRM_Core_Exception $e) {}
+  }
+
+  public static function getListedStatusId(): int {
+    $optionValue = OptionValue::get(TRUE)
+      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
+      ->addWhere('name', '=', 'pending')
+      ->execute()
+      ->first();
+
+    return (int) $optionValue['value'];
+  }
+
+  public static function getNotListedStatusId(): int {
+    $optionValue = OptionValue::get(TRUE)
+      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
+      ->addWhere('name', '=', 'error')
+      ->execute()
+      ->first();
+
+    return (int) $optionValue['value'];
   }
 
 }

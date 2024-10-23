@@ -6,10 +6,10 @@ use CRM_Ecgcheck_ExtensionUtil as E;
 * Settings metadata file
 */
 return [
-  'ecgcheck_default_api_batch_size' => [
+  'ecgcheck_api_batch_size' => [
     'group_name' => 'ecgcheck_config',
     'group' => 'ecgcheck_config',
-    'name' => 'ecgcheck_default_api_batch_size',
+    'name' => 'ecgcheck_api_batch_size',
     'type' => 'Integer',
     'default' => 100,
     'add' => '5.59',
@@ -29,5 +29,17 @@ return [
     'is_domain' => 1,
     'is_contact' => 0,
     'description' => 'Api key',
+  ],
+  'ecgcheck_check_live_time' => [
+    'group_name' => 'ecgcheck_config',
+    'group' => 'ecgcheck_config',
+    'name' => 'ecgcheck_check_live_time',
+    'type' => 'Integer',
+    'default' => 6,
+    'add' => '5.59',
+    'title' => E::ts('Check status again after time'),
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Value in hours',
   ],
 ];

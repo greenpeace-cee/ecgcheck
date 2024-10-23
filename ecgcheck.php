@@ -35,26 +35,11 @@ function ecgcheck_civicrm_enable(): void {
 
 function ecgcheck_civicrm_navigationMenu(&$menu) {
   _ecgcheck_civix_insert_navigation_menu($menu, 'Administer/System Settings', [
-    'label' => E::ts('ECG email check'),
-    'name' => 'civicrm_ecgcheck_main',
-    'permission' => 'administer CiviCRM',
-    'icon' => 'crm-i fa-envelope',
-  ]);
-
-  _ecgcheck_civix_insert_navigation_menu($menu, 'Administer/System Settings/civicrm_ecgcheck_main', [
-    'label' => E::ts('Dashboard'),
+    'label' => E::ts('ECG email check dashboard'),
     'name' => 'civicrm_ecgcheck_dashboard',
+    'permission' => 'administer CiviCRM',
     'url' => 'civicrm/ecgcheck/dashboard',
-    'permission' => 'administer CiviCRM',
-    'icon' => 'crm-i fa-th-list',
-  ]);
-
-  _ecgcheck_civix_insert_navigation_menu($menu, 'Administer/System Settings/civicrm_ecgcheck_main', [
-    'label' => E::ts('Settings'),
-    'name' => 'civicrm_ecgcheck_settings',
-    'url' => 'civicrm/ecgcheck/settings',
-    'permission' => 'administer CiviCRM',
-    'icon' => 'crm-i fa-gear',
+    'icon' => 'crm-i fa-envelope',
   ]);
 
   _ecgcheck_civix_navigationMenu($menu);

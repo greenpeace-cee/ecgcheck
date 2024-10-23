@@ -46,7 +46,7 @@ class HandleEmailEcgStatus {
     HandleEmailEcgStatus::removeLockedEmailId($entityId);
   }
 
-  private static function addLockedEmailId($emailId) {
+  public static function addLockedEmailId($emailId) {
     if (empty($emailId)) {
       return;
     }
@@ -54,7 +54,7 @@ class HandleEmailEcgStatus {
     HandleEmailEcgStatus::$lockedEmailIds[] = $emailId;
   }
 
-  private static function removeLockedEmailId($emailId) {
+  public static function removeLockedEmailId($emailId) {
     if (empty($emailId)) {
       return;
     }
