@@ -80,26 +80,7 @@ class RunEcgCheckApi extends AbstractAction {
   }
 
   private function prepareBatches(array $emails): array {
-    $emailsBatches = [];
-    $batch = [];
-    $batchItemCount = 0;
-
-    if (count($emails) <= $this->apiButchSize) {
-      $emailsBatches[] = $emails;
-      return $emailsBatches;
-    }
-
-    foreach ($emails as $email) {
-      $batch[] = $email;
-      $batchItemCount++;
-      if ($batchItemCount === $this->apiButchSize) {
-        $batchItemCount = 0;
-        $emailsBatches[] = $batch;
-        $batch = [];
-      }
-    }
-
-    return $emailsBatches;
+    return array_chunk($emails, $this->apiButchSize);
   }
 
   private function callApi($emails)
