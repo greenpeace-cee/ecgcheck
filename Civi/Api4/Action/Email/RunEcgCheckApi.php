@@ -40,7 +40,7 @@ class RunEcgCheckApi extends AbstractAction {
 
     $result[] = [
       'apiButchSize' => $this->apiButchSize,
-      'apiButchSize' => EcgcheckSettings::getCheckLiveTime(),
+      'checkLiveTime' => EcgcheckSettings::getCheckLiveTime(),
       'logs' => $this->logs
     ];
   }
