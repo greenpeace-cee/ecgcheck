@@ -19,7 +19,7 @@ class EcgcheckSettings {
   }
 
   public static function getMainScheduledJobId(): int {
-    $job = Job::get(TRUE)
+    $job = Job::get(FALSE)
       ->addWhere('name', '=', 'run_ecg_check_api_job')
       ->execute()
       ->first();
@@ -73,7 +73,7 @@ class EcgcheckSettings {
     }
 
     try {
-      $settings = Setting::get(TRUE)
+      $settings = Setting::get(FALSE)
         ->addSelect($settingName)
         ->execute();
     } catch (CRM_Core_Exception $e) {
@@ -99,14 +99,14 @@ class EcgcheckSettings {
     }
 
     try {
-      Setting::set(TRUE)
+      Setting::set(FALSE)
         ->addValue($settingName, $settingValue)
         ->execute();
     } catch (CRM_Core_Exception $e) {}
   }
 
   public static function getListedStatusId(): int {
-    $optionValue = OptionValue::get(TRUE)
+    $optionValue = OptionValue::get(FALSE)
       ->addWhere('option_group_id:name', '=', 'ecg_check_status')
       ->addWhere('name', '=', 'pending')
       ->execute()
@@ -116,7 +116,7 @@ class EcgcheckSettings {
   }
 
   public static function getNotListedStatusId(): int {
-    $optionValue = OptionValue::get(TRUE)
+    $optionValue = OptionValue::get(FALSE)
       ->addWhere('option_group_id:name', '=', 'ecg_check_status')
       ->addWhere('name', '=', 'error')
       ->execute()

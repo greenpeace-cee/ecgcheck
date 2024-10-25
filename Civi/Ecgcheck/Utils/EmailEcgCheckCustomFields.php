@@ -64,7 +64,7 @@ class EmailEcgCheckCustomFields {
   }
 
   public function getAllData(): array {
-    $email = Email::get(TRUE)
+    $email = Email::get(FALSE)
       ->addSelect(
         EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message',
         EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:name',
@@ -92,7 +92,7 @@ class EmailEcgCheckCustomFields {
   public function updateLastCheckDate() {
     $this->validateEmail();
 
-    Email::update(TRUE)
+    Email::update(FALSE)
       ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.last_check', (new DateTime())->format('Y-m-d H:i:s'))
       ->addWhere('id', '=', $this->emailId)
       ->execute();
@@ -104,7 +104,7 @@ class EmailEcgCheckCustomFields {
   public function cleanErrorMessage() {
     $this->validateEmail();
 
-    Email::update(TRUE)
+    Email::update(FALSE)
       ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message', '')
       ->addWhere('id', '=', $this->emailId)
       ->execute();
@@ -116,7 +116,7 @@ class EmailEcgCheckCustomFields {
   public function setErrorMessage($errorMessage) {
     $this->validateEmail();
 
-    Email::update(TRUE)
+    Email::update(FALSE)
       ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.error_message', $errorMessage)
       ->addWhere('id', '=', $this->emailId)
       ->execute();
@@ -135,7 +135,7 @@ class EmailEcgCheckCustomFields {
     }
 
     try {
-      $email = Email::get(TRUE)
+      $email = Email::get(FALSE)
         ->addSelect('id')
         ->addWhere('id', '=', $emailId)
         ->setLimit(1)
@@ -156,7 +156,7 @@ class EmailEcgCheckCustomFields {
    * @throws CRM_Core_Exception
    */
   private function setStatus($statusName) {
-    Email::update(TRUE)
+    Email::update(FALSE)
       ->addValue(EmailEcgCheckCustomFields::CUSTOM_GROUP . '.status:name', $statusName)
       ->addWhere('id', '=', $this->emailId)
       ->execute();
@@ -172,7 +172,7 @@ class EmailEcgCheckCustomFields {
   }
 
   public static function getStatistic(): array {
-    $emails = Email::get(TRUE)
+    $emails = Email::get(FALSE)
       ->addSelect('COUNT(id) AS count', 'ecg_check.status:name AS status')
       ->addGroupBy('ecg_check.status')
       ->execute();
