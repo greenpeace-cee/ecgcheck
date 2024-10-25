@@ -55,11 +55,11 @@ class EcgcheckSettings {
     EcgcheckSettings::setSettingValue('ecgcheck_check_live_time', $hours);
   }
 
-  public static function getJobButchSize(): int {
+  public static function getJobBatchSize(): int {
     return (int) EcgcheckSettings::getSettingValue('ecgcheck_job_batch_size');
   }
 
-  public static function setJobButchSize($batchSize) {
+  public static function setJobBatchSize($batchSize) {
     EcgcheckSettings::setSettingValue((int) 'ecgcheck_job_batch_size', $batchSize);
   }
 

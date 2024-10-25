@@ -14,19 +14,19 @@ use CRM_Core_DAO;
  * Email.runEcgCheckApi action
  * Run ECG Check Api
  *
- * @method $this setApiButchSize(int $cid) Set Api Butch Size
- * @method int getApiButchSize() Get Api Butch Size
+ * @method $this setApiBatchSize(int $cid) Set Api Batch Size
+ * @method int getApiBatchSize() Get Api Batch Size
  */
 class RunEcgCheckApi extends AbstractAction {
 
   /**
    * @var int|null
    */
-  protected ?int $apiButchSize = null;
+  protected ?int $apiBatchSize = null;
   private $logs = [];
 
   public function _run(Result $result) {
-    $this->apiButchSize = (!empty($this->apiButchSize) ? $this->apiButchSize : EcgcheckSettings::getApiBatchSize());
+    $this->apiBatchSize = (!empty($this->apiBatchSize) ? $this->apiBatchSize : EcgcheckSettings::getApiBatchSize());
     $emails = $this->findEmails();
     $emailsBatches = $this->prepareBatches($emails);
 
@@ -39,7 +39,7 @@ class RunEcgCheckApi extends AbstractAction {
     }
 
     $result[] = [
-      'apiButchSize' => $this->apiButchSize,
+      'apiBatchSize' => $this->apiBatchSize,
       'checkLiveTime' => EcgcheckSettings::getCheckLiveTime(),
       'logs' => $this->logs
     ];
@@ -68,7 +68,7 @@ class RunEcgCheckApi extends AbstractAction {
       1 => [EcgcheckSettings::getListedStatusId(), 'String'],
       2 => [EcgcheckSettings::getNotListedStatusId(), 'String'],
       3 => [$checkLiveTime, 'Integer'],
-      4 => [EcgcheckSettings::getJobButchSize(), 'Integer'],
+      4 => [EcgcheckSettings::getJobBatchSize(), 'Integer'],
     ]);
 
     while ($dao->fetch()) {
@@ -83,7 +83,7 @@ class RunEcgCheckApi extends AbstractAction {
   }
 
   private function prepareBatches(array $emails): array {
-    return array_chunk($emails, $this->apiButchSize);
+    return array_chunk($emails, $this->apiBatchSize);
   }
 
   private function callApi($emails)

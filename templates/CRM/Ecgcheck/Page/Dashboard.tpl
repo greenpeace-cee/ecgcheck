@@ -51,7 +51,7 @@
         <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
       <li>
-        <span>Job batch size: <b>{$jobButchSize}</b> items</span>
+        <span>Job batch size: <b>{$jobBatchSize}</b> items</span>
         <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
       <li >

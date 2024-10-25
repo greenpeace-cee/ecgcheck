@@ -15,7 +15,7 @@ class CRM_Ecgcheck_Page_Dashboard extends CRM_Core_Page {
     $this->assign('scheduledJobId', EcgcheckSettings::getMainScheduledJobId());
     $this->assign('api4SearchEmailLink', $this->generateApi4SearchEmailLink());
     $this->assign('checkLiveTime', EcgcheckSettings::getCheckLiveTime());
-    $this->assign('jobButchSize', EcgcheckSettings::getJobButchSize());
+    $this->assign('jobBatchSize', EcgcheckSettings::getJobBatchSize());
 
     parent::run();
   }

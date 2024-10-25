@@ -38,7 +38,7 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
     }
 
     if (!empty($values['job_batch_size'])) {
-      EcgcheckSettings::setJobButchSize((int) $values['job_batch_size']);
+      EcgcheckSettings::setJobBatchSize((int) $values['job_batch_size']);
     }
 
     CRM_Core_Session::setStatus('', ts('Settings are updated!'), 'success');
@@ -51,7 +51,7 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
       'api_batch_size' => EcgcheckSettings::getApiBatchSize(),
       'api_key' => EcgcheckSettings::getApiKey(),
       'check_live_time' => EcgcheckSettings::getCheckLiveTime(),
-      'job_batch_size' => EcgcheckSettings::getJobButchSize(),
+      'job_batch_size' => EcgcheckSettings::getJobBatchSize(),
     ];
   }
 
