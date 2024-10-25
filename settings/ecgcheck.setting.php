@@ -18,6 +18,18 @@ return [
     'is_contact' => 0,
     'description' => 'Default api batch size',
   ],
+  'ecgcheck_job_batch_size' => [
+    'group_name' => 'ecgcheck_config',
+    'group' => 'ecgcheck_config',
+    'name' => 'ecgcheck_job_batch_size',
+    'type' => 'Integer',
+    'default' => 500,
+    'add' => '5.59',
+    'title' => E::ts('Default job batch size'),
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Default job batch size',
+  ],
   'ecgcheck_api_key' => [
     'group_name' => 'ecgcheck_config',
     'group' => 'ecgcheck_config',

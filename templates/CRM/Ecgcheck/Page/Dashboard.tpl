@@ -50,6 +50,10 @@
         <span>Api batch size: <b>{$apiBatchSize}</b> items</span>
         <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
+      <li>
+        <span>Job batch size: <b>{$jobButchSize}</b> items</span>
+        <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
+      </li>
       <li >
         <p>
           <span>check status again after time(check live time): <b>{$checkLiveTime}</b> hours </span>

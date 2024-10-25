@@ -11,7 +11,7 @@ use CRM_Core_Exception;
 class EcgcheckSettings {
 
   private static function getAvailableSettings(): array {
-    return ['ecgcheck_api_key', 'ecgcheck_api_batch_size', 'ecgcheck_check_live_time'];
+    return ['ecgcheck_api_key', 'ecgcheck_api_batch_size', 'ecgcheck_check_live_time', 'ecgcheck_job_batch_size'];
   }
 
   public static function getApiKey(): string {
@@ -53,6 +53,14 @@ class EcgcheckSettings {
 
   public static function setCheckLiveTime($hours) {
     EcgcheckSettings::setSettingValue('ecgcheck_check_live_time', $hours);
+  }
+
+  public static function getJobButchSize(): int {
+    return (int) EcgcheckSettings::getSettingValue('ecgcheck_job_batch_size');
+  }
+
+  public static function setJobButchSize($batchSize) {
+    EcgcheckSettings::setSettingValue((int) 'ecgcheck_job_batch_size', $batchSize);
   }
 
   /**

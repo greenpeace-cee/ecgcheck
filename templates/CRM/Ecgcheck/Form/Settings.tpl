@@ -16,6 +16,11 @@
       <div class="clear"></div>
     </div>
     <div class="crm-section">
+      <div class="label">{$form.job_batch_size.label}</div>
+      <div class="content">{$form.job_batch_size.html}</div>
+      <div class="clear"></div>
+    </div>
+    <div class="crm-section">
       <div class="label">{$form.check_live_time.label}</div>
       <div class="content">{$form.check_live_time.html}</div>
       <div class="clear"></div>

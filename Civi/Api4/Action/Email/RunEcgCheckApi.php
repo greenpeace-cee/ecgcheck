@@ -62,10 +62,13 @@ class RunEcgCheckApi extends AbstractAction {
       $query .= ' OR ecg.last_check + INTERVAL %3 HOUR <= NOW() ';
     }
 
+    $query .= ' LIMIT %4 ';
+
     $dao = CRM_Core_DAO::executeQuery($query, [
       1 => [EcgcheckSettings::getListedStatusId(), 'String'],
       2 => [EcgcheckSettings::getNotListedStatusId(), 'String'],
       3 => [$checkLiveTime, 'Integer'],
+      4 => [EcgcheckSettings::getJobButchSize(), 'Integer'],
     ]);
 
     while ($dao->fetch()) {

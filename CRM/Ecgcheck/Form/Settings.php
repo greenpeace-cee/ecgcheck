@@ -7,6 +7,7 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
 
   public function buildQuickForm() {
     $this->add('number', 'api_batch_size', 'Api batch size', ['min' => 1], true);
+    $this->add('number', 'job_batch_size', 'job batch size', ['min' => 1], true);
     $this->add('number', 'check_live_time', 'check status again after time(hours)', [], true);
     $this->add('text', 'api_key', 'Api key', [], true);
 
@@ -36,6 +37,10 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
       EcgcheckSettings::setCheckLiveTime((int) $values['check_live_time']);
     }
 
+    if (!empty($values['job_batch_size'])) {
+      EcgcheckSettings::setJobButchSize((int) $values['job_batch_size']);
+    }
+
     CRM_Core_Session::setStatus('', ts('Settings are updated!'), 'success');
 
     parent::postProcess();
@@ -46,6 +51,7 @@ class CRM_Ecgcheck_Form_Settings extends CRM_Core_Form {
       'api_batch_size' => EcgcheckSettings::getApiBatchSize(),
       'api_key' => EcgcheckSettings::getApiKey(),
       'check_live_time' => EcgcheckSettings::getCheckLiveTime(),
+      'job_batch_size' => EcgcheckSettings::getJobButchSize(),
     ];
   }
 
