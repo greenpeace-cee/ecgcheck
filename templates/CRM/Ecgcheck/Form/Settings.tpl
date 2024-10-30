@@ -1,7 +1,7 @@
 <div>
   <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="top"}
-    <a class="crm-button" target="_blank" href="{crmURL p='civicrm/ecgcheck/dashboard' q="reset=1"}">Go to dashboard</a>
+    <a class="crm-button" href="{crmURL p='civicrm/ecgcheck/dashboard' q="reset=1"}">Go to dashboard</a>
   </div>
 
   <div>

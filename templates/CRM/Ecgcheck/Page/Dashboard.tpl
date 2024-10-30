@@ -48,11 +48,11 @@
       </li>
       <li>
         <span>Api batch size: <b>{$apiBatchSize}</b> items</span>
-        <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
+        <a href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
       <li>
         <span>Job batch size: <b>{$jobBatchSize}</b> items</span>
-        <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
+        <a href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
       <li>
         <span>Api key: <b>
@@ -63,12 +63,12 @@
           {/if}
           </b>
         </span>
-        <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit api key</a>
+        <a href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit api key</a>
       </li>
       <li >
         <p>
           <span>Check status again after time(check live time): <b>{$checkLiveTime}</b> hours </span>
-          <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
+          <a href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
         </p>
         {include file="CRM/Ecgcheck/Chanks/CheckLiveTimeHelpInfo.tpl"}
       </li>
