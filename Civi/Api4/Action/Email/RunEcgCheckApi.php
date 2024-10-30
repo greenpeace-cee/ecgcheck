@@ -52,7 +52,7 @@ class RunEcgCheckApi extends AbstractAction {
     $query = '
       SELECT email.id AS id, email.email AS email, ecg.status AS status_id
       FROM civicrm_email AS email
-      LEFT JOIN civicrm_ecg_check AS ecg ON email.id = ecg.entity_id
+      LEFT JOIN civicrm_value_ecg_check AS ecg ON email.id = ecg.entity_id
       WHERE
         ecg.status IN (%1, %2)
         OR ecg.status IS NULL

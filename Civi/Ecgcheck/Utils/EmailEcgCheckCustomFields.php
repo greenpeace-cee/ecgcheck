@@ -10,7 +10,7 @@ class EmailEcgCheckCustomFields {
   const CUSTOM_GROUP = 'ecg_check';
   const CUSTOM_FIELD_LAST_CHECK = 'last_check';
   const CUSTOM_FIELD_STATUS = 'status';
-  const TABLE_NAME = 'civicrm_ecg_check';
+  const TABLE_NAME = 'civicrm_value_ecg_check';
 
   public static function getAvailableStatuses(): array {
     return ['pending', 'listed', 'not_listed', 'error'];
@@ -58,7 +58,7 @@ class EmailEcgCheckCustomFields {
 
     $valuesSql = ' (' . implode(', NOW()), (', $emailIds) . ', NOW()) ';
     $query = '
-        INSERT INTO civicrm_ecg_check (entity_id, last_check)
+        INSERT INTO civicrm_value_ecg_check (entity_id, last_check)
         VALUES ' . $valuesSql . '
         ON DUPLICATE KEY UPDATE last_check = VALUES(last_check);
     ';
@@ -85,7 +85,7 @@ class EmailEcgCheckCustomFields {
 
     $valuesSql = ' (' . implode(', %1), (', $emailIds) . ', %1) ';
     $query = '
-        INSERT INTO civicrm_ecg_check (entity_id, status)
+        INSERT INTO civicrm_value_ecg_check (entity_id, status)
         VALUES ' . $valuesSql . '
         ON DUPLICATE KEY UPDATE status = VALUES(status);
     ';

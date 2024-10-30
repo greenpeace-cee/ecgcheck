@@ -41,7 +41,7 @@ return [
         'collapse_adv_display' => TRUE,
         'created_date' => '2024-09-30 12:51:36',
         'is_public' => FALSE,
-        'table_name' => 'civicrm_ecg_check',
+        'table_name' => 'civicrm_value_ecg_check',
         'icon' => '',
       ],
       'match' => [
