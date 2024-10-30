@@ -2,7 +2,6 @@
 
 namespace Civi\Ecgcheck\Utils;
 
-use Civi\API\Exception\UnauthorizedException;
 use Civi\Api4\Job;
 use Civi\Api4\OptionValue;
 use Civi\Api4\Setting;
@@ -60,7 +59,7 @@ class EcgcheckSettings {
   }
 
   public static function setJobBatchSize($batchSize) {
-    EcgcheckSettings::setSettingValue((int) 'ecgcheck_job_batch_size', $batchSize);
+    EcgcheckSettings::setSettingValue('ecgcheck_job_batch_size', (int) $batchSize);
   }
 
   /**
@@ -105,7 +104,7 @@ class EcgcheckSettings {
     } catch (CRM_Core_Exception $e) {}
   }
 
-  public static function getListedStatusId(): int {
+  public static function getPendingStatusId(): int {
     $optionValue = OptionValue::get(FALSE)
       ->addWhere('option_group_id:name', '=', 'ecg_check_status')
       ->addWhere('name', '=', 'pending')
@@ -114,8 +113,27 @@ class EcgcheckSettings {
 
     return (int) $optionValue['value'];
   }
+  public static function getListedStatusId(): int {
+    $optionValue = OptionValue::get(FALSE)
+      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
+      ->addWhere('name', '=', 'listed')
+      ->execute()
+      ->first();
+
+    return (int) $optionValue['value'];
+  }
 
   public static function getNotListedStatusId(): int {
+    $optionValue = OptionValue::get(FALSE)
+      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
+      ->addWhere('name', '=', 'not_listed')
+      ->execute()
+      ->first();
+
+    return (int) $optionValue['value'];
+  }
+
+  public static function getErrorStatusId(): int {
     $optionValue = OptionValue::get(FALSE)
       ->addWhere('option_group_id:name', '=', 'ecg_check_status')
       ->addWhere('name', '=', 'error')

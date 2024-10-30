@@ -2,7 +2,6 @@
 
 namespace Civi\Api4\Action\Email;
 
-use Civi\Api4\Email;
 use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\Result;
 use Civi\Ecgcheck\HookListeners\PostSaveEntity\HandleEmailEcgStatus;
@@ -35,11 +34,12 @@ class RunEcgCheckApi extends AbstractAction {
     }
 
     if (empty($emails)) {
-      $this->logs[] = ['message' => 'No emails found in todo.',];
+      $this->logs[] = ['No emails found in todo.',];
     }
 
-    $result[] = [
+    $result['values'] = [
       'apiBatchSize' => $this->apiBatchSize,
+      'jobBatchSize' => EcgcheckSettings::getJobBatchSize(),
       'checkLiveTime' => EcgcheckSettings::getCheckLiveTime(),
       'logs' => $this->logs
     ];
@@ -50,7 +50,7 @@ class RunEcgCheckApi extends AbstractAction {
     $preparedEmails = [];
 
     $query = '
-      SELECT email.id AS id, email.email AS email
+      SELECT email.id AS id, email.email AS email, ecg.status AS status_id
       FROM civicrm_email AS email
       LEFT JOIN civicrm_ecg_check AS ecg ON email.id = ecg.entity_id
       WHERE
@@ -62,11 +62,12 @@ class RunEcgCheckApi extends AbstractAction {
       $query .= ' OR ecg.last_check + INTERVAL %3 HOUR <= NOW() ';
     }
 
+    $query .= ' ORDER BY email.id ASC, ecg.last_check ASC ';
     $query .= ' LIMIT %4 ';
 
     $dao = CRM_Core_DAO::executeQuery($query, [
-      1 => [EcgcheckSettings::getListedStatusId(), 'String'],
-      2 => [EcgcheckSettings::getNotListedStatusId(), 'String'],
+      1 => [EcgcheckSettings::getPendingStatusId(), 'String'],
+      2 => [EcgcheckSettings::getErrorStatusId(), 'String'],
       3 => [$checkLiveTime, 'Integer'],
       4 => [EcgcheckSettings::getJobBatchSize(), 'Integer'],
     ]);
@@ -75,6 +76,7 @@ class RunEcgCheckApi extends AbstractAction {
       $preparedEmails[] = [
         'id' => $dao->id,
         'email' => $dao->email,
+        'statusId' => $dao->status_id,
         'hashedEmail' => hash("sha512", $dao->email),
       ];
     }
@@ -86,8 +88,7 @@ class RunEcgCheckApi extends AbstractAction {
     return array_chunk($emails, $this->apiBatchSize);
   }
 
-  private function callApi($emails)
-  {
+  private function callApi($emails) {
     $apiCallBody = $this->prepareApiCallBody($emails);
     $curl = curl_init();
 
@@ -112,12 +113,12 @@ class RunEcgCheckApi extends AbstractAction {
     curl_close($curl);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-      $this->logs[] = ['errorMessage' => 'Failed to fetch emails from API. Wrong JSON structure. Response:' . $response,];
+      $this->logs[] = ['Failed to fetch emails from API. Wrong JSON structure. Response:' . $response,];
       return;
     }
 
     if (!isset($apiResult['emails'])) {
-      $this->logs[] = ['errorMessage' => 'Failed to fetch emails from API. Response:' . $response,];
+      $this->logs[] = ['Failed to fetch emails from API. Response:' . $response,];
       return;
     }
 
@@ -140,27 +141,80 @@ class RunEcgCheckApi extends AbstractAction {
 
   private function handleApiResult($apiResult, $emails) {
     $listedEmails = $apiResult['emails'];
+    $listedEmailIds = [];
+    $notListedEmailIds = [];
+    $listedStatusId = EcgcheckSettings::getListedStatusId();
+    $notListedStatusId = EcgcheckSettings::getNotListedStatusId();
 
     foreach ($emails as $email) {
-      HandleEmailEcgStatus::addLockedEmailId($email['id']);
-
-      try {
-        $emailEcgCheck = new EmailEcgCheckCustomFields($email['id']);
-        if (in_array($email['hashedEmail'], $listedEmails)) {
-          $emailEcgCheck->setListedStatus();
-          $this->logs[] = ['message' => 'Mark as listed email id=' . $email['id']];
-        } else {
-          $emailEcgCheck->setNotListedStatus();
-          $this->logs[] = ['message' => 'Mark as not listed email id=' . $email['id']];
+      if (in_array($email['hashedEmail'], $listedEmails)) {
+        if ((int) $email['statusId'] !== $listedStatusId) {
+          $listedEmailIds[] = $email['id'];
         }
-
-        $emailEcgCheck->updateLastCheckDate();
-        $emailEcgCheck->cleanErrorMessage();
-      } catch (\Exception $e) {
-        $this->logs[] = ['message' => 'Cannot update email id=' . $email['id']];
+      } else {
+        if ((int) $email['statusId'] !== $notListedStatusId) {
+          $notListedEmailIds[] = $email['id'];
+        }
       }
+    }
 
-      HandleEmailEcgStatus::removeLockedEmailId($email['id']);
+    $this->markAsListedEmails($listedEmailIds);
+    $this->markAsNotListedEmails($notListedEmailIds);
+    $this->updateLastCheckDate($emails);
+  }
+
+  public function updateLastCheckDate($emails) {
+    $emailIds = array_column($emails, 'id');
+    $emailEcgCheck = new EmailEcgCheckCustomFields($emailIds);
+    $emailEcgCheck->updateLastCheckDate();
+
+    HandleEmailEcgStatus::addLockedEmailIds($emailIds);
+
+    try {
+      $emailEcgCheck->execute();
+      $this->logs[] = ['Update last check date for email ids:' . implode(',', $emailIds)];
+    } catch (\Exception $e) {
+      $this->logs[] = ['Cannot update email ids:' . implode(',', $emailIds)];
+    } finally {
+      HandleEmailEcgStatus::removeLockedEmailIds($emailIds);
+    }
+  }
+
+  public function markAsListedEmails($listedEmailIds) {
+    if (empty($listedEmailIds)) {
+      return;
+    }
+
+    HandleEmailEcgStatus::addLockedEmailIds($listedEmailIds);
+
+    $emailEcgCheck = new EmailEcgCheckCustomFields($listedEmailIds);
+    $emailEcgCheck->setListedStatus();
+    try {
+      $emailEcgCheck->execute();
+      $this->logs[] = ['Mark as listed email ids:' . implode(',', $listedEmailIds)];
+    } catch (\Exception $e) {
+      $this->logs[] = ['Cannot update email ids:' . implode(',', $listedEmailIds)];
+    } finally {
+      HandleEmailEcgStatus::removeLockedEmailIds($listedEmailIds);
+    }
+  }
+
+  public function markAsNotListedEmails($notListedEmailIds) {
+    if (empty($notListedEmailIds)) {
+      return;
+    }
+
+    HandleEmailEcgStatus::addLockedEmailIds($notListedEmailIds);
+
+    $emailEcgCheck = new EmailEcgCheckCustomFields($notListedEmailIds);
+    $emailEcgCheck->setNotListedStatus();
+    try {
+      $emailEcgCheck->execute();
+      $this->logs[] = ['Mark as not listed email ids:' . implode(',', $notListedEmailIds)];
+    } catch (\Exception $e) {
+      $this->logs[] = ['Cannot update email ids:' . implode(',', $notListedEmailIds)];
+    } finally {
+      HandleEmailEcgStatus::removeLockedEmailIds($notListedEmailIds);
     }
   }
 

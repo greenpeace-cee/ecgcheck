@@ -54,27 +54,23 @@
         <span>Job batch size: <b>{$jobBatchSize}</b> items</span>
         <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
       </li>
+      <li>
+        <span>Api key: <b>
+          {if empty($hiddenApiKey)}
+            <span>Is empty need to be set!</span>
+          {else}
+            <span>{$hiddenApiKey}</span>
+          {/if}
+          </b>
+        </span>
+        <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit api key</a>
+      </li>
       <li >
         <p>
-          <span>check status again after time(check live time): <b>{$checkLiveTime}</b> hours </span>
+          <span>Check status again after time(check live time): <b>{$checkLiveTime}</b> hours </span>
           <a target="_blank" href="{crmURL p='civicrm/ecgcheck/settings' q="reset=1"}">edit</a>
         </p>
-        <div class="status">
-          <p>
-            <b>Examples:</b><br>
-          </p>
-          <ul>
-            <li>
-              Value = 6 hours: <br>
-              If emails(listed or not listed) and 'last check date' + 6 hours <= now, <br>
-              then those emails will be checked again at next scheduled job. <br> <br>
-            </li>
-            <li>
-              Example: Value = 0 hours:<br>
-              emails will be not checked again at next scheduled job.
-            </li>
-          </ul>
-        </div>
+        {include file="CRM/Ecgcheck/Chanks/CheckLiveTimeHelpInfo.tpl"}
       </li>
     </ul>
   </div>

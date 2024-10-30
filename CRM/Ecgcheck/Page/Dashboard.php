@@ -16,6 +16,7 @@ class CRM_Ecgcheck_Page_Dashboard extends CRM_Core_Page {
     $this->assign('api4SearchEmailLink', $this->generateApi4SearchEmailLink());
     $this->assign('checkLiveTime', EcgcheckSettings::getCheckLiveTime());
     $this->assign('jobBatchSize', EcgcheckSettings::getJobBatchSize());
+    $this->assign('hiddenApiKey', EcgcheckSettings::getApiKey());
 
     parent::run();
   }

@@ -35,10 +35,10 @@ class HandleEmailEcgStatus {
     HandleEmailEcgStatus::addLockedEmailId($entityId);
 
     try {
-      $emailEcgCheck = new EmailEcgCheckCustomFields($entityId);
+      $emailEcgCheck = new EmailEcgCheckCustomFields([$entityId]);
       $emailEcgCheck->setPendingStatus();
       $emailEcgCheck->updateLastCheckDate();
-      $emailEcgCheck->cleanErrorMessage();
+      $emailEcgCheck->execute();
     } catch (Exception $e) {
      // TODO: log it
     }
@@ -54,12 +54,29 @@ class HandleEmailEcgStatus {
     HandleEmailEcgStatus::$lockedEmailIds[] = $emailId;
   }
 
+  public static function addLockedEmailIds($emailIds) {
+    if (empty($emailIds)) {
+      return;
+    }
+
+    HandleEmailEcgStatus::$lockedEmailIds = array_merge(HandleEmailEcgStatus::$lockedEmailIds, $emailIds);
+  }
+
   public static function removeLockedEmailId($emailId) {
     if (empty($emailId)) {
       return;
     }
 
     HandleEmailEcgStatus::$lockedEmailIds = array_diff(HandleEmailEcgStatus::$lockedEmailIds, [$emailId]);
+    HandleEmailEcgStatus::$lockedEmailIds = array_values(HandleEmailEcgStatus::$lockedEmailIds);
+  }
+
+  public static function removeLockedEmailIds($emailIds) {
+    if (empty($emailIds)) {
+      return;
+    }
+
+    HandleEmailEcgStatus::$lockedEmailIds = array_diff(HandleEmailEcgStatus::$lockedEmailIds, $emailIds);
     HandleEmailEcgStatus::$lockedEmailIds = array_values(HandleEmailEcgStatus::$lockedEmailIds);
   }
 

@@ -196,32 +196,6 @@ return [
     ],
   ],
   [
-    'name' => 'CustomField_error_message',
-    'entity' => 'CustomField',
-    'cleanup' => 'never',
-    'update' => 'always',
-    'params' => [
-      'version' => 4,
-      'values' => [
-        'custom_group_id.name' => 'ecg_check',
-        'name' => 'error_message',
-        'label' => E::ts('Error Message'),
-        'data_type' => 'Memo',
-        'html_type' => 'TextArea',
-        'weight' => 3,
-        'attributes' => 'rows=4, cols=60',
-        'note_columns' => 60,
-        'note_rows' => 4,
-        'column_name' => 'error_message',
-        'is_view' => TRUE,
-      ],
-      'match' => [
-        'name',
-        'custom_group_id',
-      ],
-    ],
-  ],
-  [
     'name' => 'Job_run_ecg_check_api_job',
     'entity' => 'Job',
     'cleanup' => 'never',
