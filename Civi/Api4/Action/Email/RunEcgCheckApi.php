@@ -143,6 +143,7 @@ class RunEcgCheckApi extends AbstractAction {
     $listedEmails = $apiResult['emails'];
     $listedEmailIds = [];
     $notListedEmailIds = [];
+    $allEmailIds = array_column($emails, 'id');
     $listedStatusId = EcgcheckSettings::getListedStatusId();
     $notListedStatusId = EcgcheckSettings::getNotListedStatusId();
 
@@ -158,64 +159,14 @@ class RunEcgCheckApi extends AbstractAction {
       }
     }
 
-    $this->markAsListedEmails($listedEmailIds);
-    $this->markAsNotListedEmails($notListedEmailIds);
-    $this->updateLastCheckDate($emails);
-  }
+    EmailEcgCheckCustomFields::markAsListedEmails($listedEmailIds);
+    $this->logs[] = ['Mark as listed email ids:' . implode(',', $listedEmailIds)];
 
-  public function updateLastCheckDate($emails) {
-    $emailIds = array_column($emails, 'id');
-    $emailEcgCheck = new EmailEcgCheckCustomFields($emailIds);
-    $emailEcgCheck->updateLastCheckDate();
+    EmailEcgCheckCustomFields::markAsNotListedEmails($notListedEmailIds);
+    $this->logs[] = ['Mark as not listed email ids:' . implode(',', $notListedEmailIds)];
 
-    HandleEmailEcgStatus::addLockedEmailIds($emailIds);
-
-    try {
-      $emailEcgCheck->execute();
-      $this->logs[] = ['Update last check date for email ids:' . implode(',', $emailIds)];
-    } catch (\Exception $e) {
-      $this->logs[] = ['Cannot update email ids:' . implode(',', $emailIds)];
-    } finally {
-      HandleEmailEcgStatus::removeLockedEmailIds($emailIds);
-    }
-  }
-
-  public function markAsListedEmails($listedEmailIds) {
-    if (empty($listedEmailIds)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::addLockedEmailIds($listedEmailIds);
-
-    $emailEcgCheck = new EmailEcgCheckCustomFields($listedEmailIds);
-    $emailEcgCheck->setListedStatus();
-    try {
-      $emailEcgCheck->execute();
-      $this->logs[] = ['Mark as listed email ids:' . implode(',', $listedEmailIds)];
-    } catch (\Exception $e) {
-      $this->logs[] = ['Cannot update email ids:' . implode(',', $listedEmailIds)];
-    } finally {
-      HandleEmailEcgStatus::removeLockedEmailIds($listedEmailIds);
-    }
-  }
-
-  public function markAsNotListedEmails($notListedEmailIds) {
-    if (empty($notListedEmailIds)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::addLockedEmailIds($notListedEmailIds);
-
-    $emailEcgCheck = new EmailEcgCheckCustomFields($notListedEmailIds);
-    $emailEcgCheck->setNotListedStatus();
-    try {
-      $emailEcgCheck->execute();
-      $this->logs[] = ['Mark as not listed email ids:' . implode(',', $notListedEmailIds)];
-    } catch (\Exception $e) {
-      $this->logs[] = ['Cannot update email ids:' . implode(',', $notListedEmailIds)];
-    } finally {
-      HandleEmailEcgStatus::removeLockedEmailIds($notListedEmailIds);
-    }
+    EmailEcgCheckCustomFields::updateLastCheckDateToEmails($allEmailIds);
+    $this->logs[] = ['Update last check date for email ids:' . implode(',', $allEmailIds)];
   }
 
 }

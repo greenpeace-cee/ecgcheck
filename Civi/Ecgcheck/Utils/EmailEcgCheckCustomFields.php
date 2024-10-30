@@ -3,8 +3,7 @@
 namespace Civi\Ecgcheck\Utils;
 
 use Civi\Api4\Email;
-use DateTime;
-use Exception;
+use CRM_Core_DAO;
 
 class EmailEcgCheckCustomFields {
 
@@ -12,45 +11,9 @@ class EmailEcgCheckCustomFields {
   const CUSTOM_FIELD_LAST_CHECK = 'last_check';
   const CUSTOM_FIELD_STATUS = 'status';
   const TABLE_NAME = 'civicrm_ecg_check';
-  private $emailEntity;
-
-  public function __construct($emailIds) {
-    $this->emailEntity = Email::update(FALSE)->addWhere('id', 'IN', $emailIds);
-  }
 
   public static function getAvailableStatuses(): array {
     return ['pending', 'listed', 'not_listed', 'error'];
-  }
-
-  public function setPendingStatus() {
-    $this->setStatus('pending');
-  }
-
-  public function setListedStatus() {
-    $this->setStatus('listed');
-  }
-
-  public function setNotListedStatus() {
-    $this->setStatus('not_listed');
-  }
-
-  public function setErrorStatus() {
-    $this->setStatus('error');
-  }
-
-  public function updateLastCheckDate() {
-    $this->emailEntity->addValue(self::CUSTOM_GROUP . '.' . self::CUSTOM_FIELD_LAST_CHECK, (new DateTime())->format('Y-m-d H:i:s'));
-  }
-
-  private function setStatus($statusName) {
-    $this->emailEntity->addValue(self::CUSTOM_GROUP . '.' . self::CUSTOM_FIELD_STATUS . ':name', $statusName);
-  }
-
-  /**
-   * @throws Exception
-   */
-  public function execute() {
-    $this->emailEntity->execute();
   }
 
   public static function getStatistic(): array {
@@ -86,6 +49,50 @@ class EmailEcgCheckCustomFields {
     }
 
     return $statisticData;
+  }
+
+  public static function updateLastCheckDateToEmails($emailIds) {
+    if (empty($emailIds)) {
+      return;
+    }
+
+    $valuesSql = ' (' . implode(', NOW()), (', $emailIds) . ', NOW()) ';
+    $query = '
+        INSERT INTO civicrm_ecg_check (entity_id, last_check)
+        VALUES ' . $valuesSql . '
+        ON DUPLICATE KEY UPDATE last_check = VALUES(last_check);
+    ';
+
+    CRM_Core_DAO::executeQuery($query, []);
+  }
+
+  public static function markAsListedEmails($emailIds) {
+    self::setEmailStatusToEmails($emailIds, EcgcheckSettings::getListedStatusId());
+  }
+
+  public static function markAsNotListedEmails($emailIds) {
+    self::setEmailStatusToEmails($emailIds, EcgcheckSettings::getNotListedStatusId());
+  }
+
+  public static function markAsPendingEmails($emailIds) {
+    self::setEmailStatusToEmails($emailIds, EcgcheckSettings::getPendingStatusId());
+  }
+
+  public static function setEmailStatusToEmails($emailIds, $statusId) {
+    if (empty($emailIds) || empty($statusId)) {
+      return;
+    }
+
+    $valuesSql = ' (' . implode(', %1), (', $emailIds) . ', %1) ';
+    $query = '
+        INSERT INTO civicrm_ecg_check (entity_id, status)
+        VALUES ' . $valuesSql . '
+        ON DUPLICATE KEY UPDATE status = VALUES(status);
+    ';
+
+    CRM_Core_DAO::executeQuery($query, [
+      1 => [$statusId, 'String'],
+    ]);
   }
 
 }

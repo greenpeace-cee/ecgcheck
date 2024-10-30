@@ -4,11 +4,8 @@ namespace Civi\Ecgcheck\HookListeners\PostSaveEntity;
 
 use Civi\Core\Event\GenericHookEvent;
 use Civi\Ecgcheck\Utils\EmailEcgCheckCustomFields;
-use Exception;
 
 class HandleEmailEcgStatus {
-
-  private static array $lockedEmailIds = [];
 
   /**
    * @param GenericHookEvent $event
@@ -27,65 +24,7 @@ class HandleEmailEcgStatus {
       return;
     }
 
-    // prevent twice running hook
-    if (HandleEmailEcgStatus::isEmailLocked($entityId)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::addLockedEmailId($entityId);
-
-    try {
-      $emailEcgCheck = new EmailEcgCheckCustomFields([$entityId]);
-      $emailEcgCheck->setPendingStatus();
-      $emailEcgCheck->updateLastCheckDate();
-      $emailEcgCheck->execute();
-    } catch (Exception $e) {
-     // TODO: log it
-    }
-
-    HandleEmailEcgStatus::removeLockedEmailId($entityId);
-  }
-
-  public static function addLockedEmailId($emailId) {
-    if (empty($emailId)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::$lockedEmailIds[] = $emailId;
-  }
-
-  public static function addLockedEmailIds($emailIds) {
-    if (empty($emailIds)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::$lockedEmailIds = array_merge(HandleEmailEcgStatus::$lockedEmailIds, $emailIds);
-  }
-
-  public static function removeLockedEmailId($emailId) {
-    if (empty($emailId)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::$lockedEmailIds = array_diff(HandleEmailEcgStatus::$lockedEmailIds, [$emailId]);
-    HandleEmailEcgStatus::$lockedEmailIds = array_values(HandleEmailEcgStatus::$lockedEmailIds);
-  }
-
-  public static function removeLockedEmailIds($emailIds) {
-    if (empty($emailIds)) {
-      return;
-    }
-
-    HandleEmailEcgStatus::$lockedEmailIds = array_diff(HandleEmailEcgStatus::$lockedEmailIds, $emailIds);
-    HandleEmailEcgStatus::$lockedEmailIds = array_values(HandleEmailEcgStatus::$lockedEmailIds);
-  }
-
-  private static function isEmailLocked($emailId): bool {
-    if (empty($emailId)) {
-      return false;
-    }
-
-    return in_array($emailId, HandleEmailEcgStatus::$lockedEmailIds);
+    EmailEcgCheckCustomFields::markAsPendingEmails([$entityId]);
   }
 
 }

@@ -1,4 +1,3 @@
-
 <div class="ecgcheck__dashboard-items">
   <div class="ecgcheck__dashboard-item">
     <div class="crm-block crm-form-block">
