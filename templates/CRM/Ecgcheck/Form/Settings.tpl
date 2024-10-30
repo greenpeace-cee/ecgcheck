@@ -1,4 +1,4 @@
-<div>
+<div class="crm-block crm-form-block">
   <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="top"}
     <a class="crm-button" href="{crmURL p='civicrm/ecgcheck/dashboard' q="reset=1"}">Go to dashboard</a>
