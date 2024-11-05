@@ -4,7 +4,6 @@ namespace Civi\Api4\Action\Email;
 
 use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\Result;
-use Civi\Ecgcheck\HookListeners\PostSaveEntity\HandleEmailEcgStatus;
 use Civi\Ecgcheck\Utils\EcgcheckSettings;
 use Civi\Ecgcheck\Utils\EmailEcgCheckCustomFields;
 use CRM_Core_DAO;
@@ -52,7 +51,7 @@ class RunEcgCheckApi extends AbstractAction {
     $query = '
       SELECT email.id AS id, email.email AS email, ecg.status AS status_id
       FROM civicrm_email AS email
-      LEFT JOIN civicrm_value_ecg_check AS ecg ON email.id = ecg.entity_id
+      LEFT JOIN ' . EmailEcgCheckCustomFields::TABLE_NAME . ' AS ecg ON email.id = ecg.entity_id
       WHERE
         ecg.status IN (%1, %2)
         OR ecg.status IS NULL
@@ -90,6 +89,7 @@ class RunEcgCheckApi extends AbstractAction {
 
   private function callApi($emails) {
     $apiCallBody = $this->prepareApiCallBody($emails);
+    $allEmailIds = array_column($emails, 'id');
     $curl = curl_init();
 
     curl_setopt_array($curl, [
@@ -113,12 +113,26 @@ class RunEcgCheckApi extends AbstractAction {
     curl_close($curl);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-      $this->logs[] = ['Failed to fetch emails from API. Wrong JSON structure. Response:' . $response,];
+      EmailEcgCheckCustomFields::markAsErrorEmails($allEmailIds);
+      $this->logs[] = ['Failed to fetch emails from API. Wrong JSON structure. Response:' . $response];
+      $this->logs[] = ['Mark as "error" email ids:' . implode(',', $allEmailIds)];
+
+      return;
+    }
+
+    if (isset($apiResult['message']) && $apiResult['message'] == 'wrong-authentication-key') {
+      EmailEcgCheckCustomFields::markAsErrorEmails($allEmailIds);
+      $this->logs[] = ['Failed to auth at API. Wrong-authentication-key. Response:' . $response];
+      $this->logs[] = ['Mark as "error" email ids:' . implode(',', $allEmailIds)];
+
       return;
     }
 
     if (!isset($apiResult['emails'])) {
-      $this->logs[] = ['Failed to fetch emails from API. Response:' . $response,];
+      EmailEcgCheckCustomFields::markAsErrorEmails($allEmailIds);
+      $this->logs[] = ['Failed to fetch emails from API. Cannot find "email" field. Response:' . $response];
+      $this->logs[] = ['Mark as "error" email ids:' . implode(',', $allEmailIds)];
+
       return;
     }
 
@@ -159,11 +173,15 @@ class RunEcgCheckApi extends AbstractAction {
       }
     }
 
-    EmailEcgCheckCustomFields::markAsListedEmails($listedEmailIds);
-    $this->logs[] = ['Mark as listed email ids:' . implode(',', $listedEmailIds)];
+    if (!empty($listedEmailIds)) {
+      EmailEcgCheckCustomFields::markAsListedEmails($listedEmailIds);
+      $this->logs[] = ['Mark as listed email ids:' . implode(',', $listedEmailIds)];
+    }
 
-    EmailEcgCheckCustomFields::markAsNotListedEmails($notListedEmailIds);
-    $this->logs[] = ['Mark as not listed email ids:' . implode(',', $notListedEmailIds)];
+    if (!empty($notListedEmailIds)) {
+      EmailEcgCheckCustomFields::markAsNotListedEmails($notListedEmailIds);
+      $this->logs[] = ['Mark as not listed email ids:' . implode(',', $notListedEmailIds)];
+    }
 
     EmailEcgCheckCustomFields::updateLastCheckDateToEmails($allEmailIds);
     $this->logs[] = ['Update last check date for email ids:' . implode(',', $allEmailIds)];

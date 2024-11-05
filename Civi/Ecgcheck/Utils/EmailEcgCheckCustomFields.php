@@ -58,7 +58,7 @@ class EmailEcgCheckCustomFields {
 
     $valuesSql = ' (' . implode(', NOW()), (', $emailIds) . ', NOW()) ';
     $query = '
-        INSERT INTO civicrm_value_ecg_check (entity_id, last_check)
+        INSERT INTO ' . EmailEcgCheckCustomFields::TABLE_NAME . ' (entity_id, last_check)
         VALUES ' . $valuesSql . '
         ON DUPLICATE KEY UPDATE last_check = VALUES(last_check);
     ';
@@ -78,6 +78,10 @@ class EmailEcgCheckCustomFields {
     self::setEmailStatusToEmails($emailIds, EcgcheckSettings::getPendingStatusId());
   }
 
+  public static function markAsErrorEmails($emailIds) {
+    self::setEmailStatusToEmails($emailIds, EcgcheckSettings::getErrorStatusId());
+  }
+
   public static function setEmailStatusToEmails($emailIds, $statusId) {
     if (empty($emailIds) || empty($statusId)) {
       return;
@@ -85,7 +89,7 @@ class EmailEcgCheckCustomFields {
 
     $valuesSql = ' (' . implode(', %1), (', $emailIds) . ', %1) ';
     $query = '
-        INSERT INTO civicrm_value_ecg_check (entity_id, status)
+        INSERT INTO ' . EmailEcgCheckCustomFields::TABLE_NAME . ' (entity_id, status)
         VALUES ' . $valuesSql . '
         ON DUPLICATE KEY UPDATE status = VALUES(status);
     ';

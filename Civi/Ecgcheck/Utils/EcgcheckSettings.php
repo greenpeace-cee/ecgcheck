@@ -105,38 +105,24 @@ class EcgcheckSettings {
   }
 
   public static function getPendingStatusId(): int {
-    $optionValue = OptionValue::get(FALSE)
-      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
-      ->addWhere('name', '=', 'pending')
-      ->execute()
-      ->first();
-
-    return (int) $optionValue['value'];
+    return self::getStatusId('pending');
   }
   public static function getListedStatusId(): int {
-    $optionValue = OptionValue::get(FALSE)
-      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
-      ->addWhere('name', '=', 'listed')
-      ->execute()
-      ->first();
-
-    return (int) $optionValue['value'];
+    return self::getStatusId('listed');
   }
 
   public static function getNotListedStatusId(): int {
-    $optionValue = OptionValue::get(FALSE)
-      ->addWhere('option_group_id:name', '=', 'ecg_check_status')
-      ->addWhere('name', '=', 'not_listed')
-      ->execute()
-      ->first();
-
-    return (int) $optionValue['value'];
+    return self::getStatusId('not_listed');
   }
 
   public static function getErrorStatusId(): int {
+    return self::getStatusId('error');
+  }
+
+  public static function getStatusId($statusName): int {
     $optionValue = OptionValue::get(FALSE)
       ->addWhere('option_group_id:name', '=', 'ecg_check_status')
-      ->addWhere('name', '=', 'error')
+      ->addWhere('name', '=', $statusName)
       ->execute()
       ->first();
 
