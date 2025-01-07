@@ -205,7 +205,7 @@ return [
     'name' => 'Job_run_ecg_check_api_job',
     'entity' => 'Job',
     'cleanup' => 'never',
-    'update' => 'unmodified',
+    'update' => 'never',
     'params' => [
       'version' => 4,
       'values' => [
