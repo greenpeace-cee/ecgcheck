@@ -61,7 +61,7 @@ class RunEcgCheckApi extends AbstractAction {
       $query .= ' OR ecg.last_check + INTERVAL %3 HOUR <= NOW() ';
     }
 
-    $query .= ' ORDER BY email.id ASC, ecg.last_check ASC ';
+    $query .= ' ORDER BY ecg.status, email.id ASC, ecg.last_check asc ';
     $query .= ' LIMIT %4 ';
 
     $dao = CRM_Core_DAO::executeQuery($query, [
