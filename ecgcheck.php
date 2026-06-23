@@ -23,6 +23,11 @@ function ecgcheck_civicrm_config(&$config): void {
       'Civi\Ecgcheck\HookListeners\PostSaveEntity\HandleEmailEcgStatus::run',
       PHP_INT_MAX - 1
   );
+  Civi::dispatcher()->addListener(
+      'hook_civicrm_pageRun',
+      'Civi\Ecgcheck\HookListeners\PageRun\HideEcgCustomGroup::run',
+      PHP_INT_MAX - 1
+  );
 }
 
 function ecgcheck_civicrm_install(): void {
