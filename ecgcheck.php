@@ -11,18 +11,6 @@ use CRM_Ecgcheck_ExtensionUtil as E;
 
 function ecgcheck_civicrm_config(&$config): void {
   _ecgcheck_civix_civicrm_config($config);
-
-  // prevent add listeners twice
-  if (isset(Civi::$statics[__FUNCTION__])) {
-    return;
-  }
-  Civi::$statics[__FUNCTION__] = 1;
-
-  Civi::dispatcher()->addListener(
-      'hook_civicrm_post',
-      'Civi\Ecgcheck\HookListeners\PostSaveEntity\HandleEmailEcgStatus::run',
-      PHP_INT_MAX - 1
-  );
 }
 
 function ecgcheck_civicrm_install(): void {
