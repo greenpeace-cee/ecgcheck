@@ -5,6 +5,7 @@ namespace Civi\Ecgcheck\Hooks\PageRun;
 use Civi\Api4\CustomGroup;
 use Civi\Core\Event\GenericHookEvent;
 use CRM_Contact_Page_View_Summary;
+use CRM_Contact_Page_Inline_Email;
 use CRM_Core_Region;
 use CRM_Core_Resources;
 use CRM_Ecgcheck_ExtensionUtil;
@@ -21,7 +22,10 @@ class HideEcgCustomGroup extends AutoSubscriber {
       return;
     }
 
-    if (get_class($event->page) !== CRM_Contact_Page_View_Summary::class) {
+    if (!in_array(get_class($event->page), [
+      CRM_Contact_Page_View_Summary::class,
+      CRM_Contact_Page_Inline_Email::class
+    ])) {
       return;
     }
 
